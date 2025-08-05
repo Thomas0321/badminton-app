@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}{{ team.name }} - 羽球揪團{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">{{ team.name }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-user me-2"></i>主辦者</h6>
+                        <p><a href="{{ url_for('user_profile', user_id=team.organizer.id) }}" class="text-decoration-none">{{ team.organizer.nickname }}</a></p>
+                        
+                        <h6><i class="fas fa-map-marker-alt me-2"></i>活動地點</h6>
+                        <p><strong>{{ team.location_city }}</strong><br>
+                        {{ team.location_venue }}<br>
+                        <small class="text-muted">{{ team.location_address }}</small></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-clock me-2"></i>活動時間</h6>
+                        <p>{{ team.start_time.strftime('%Y-%m-%d %H:%M') }}<br>
+                        至 {{ team.end_time.strftime('%H:%M') }}</p>
+                        
+                        <h6><i class="fas fa-users me-2"></i>參與狀況</h6>
+                        <p>已報名：{{ members|length }}/{{ team.max_participants }}人<br>
+                        {% if waitlist %}候補：{{ waitlist|length }}人<br>{% endif %}
+                        活動類型：<span class="badge bg-info">{{ team.activity_type }}</span></p>
+                    </div>
+                </div>
+                
+                {% if team.description %}
+                <div class="mt-3">
+                    <h6><i class="fas fa-info-circle me-2"></i>活動說明</h6>
+                    <p>{{ team.description }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="mt-3">
+                    <div class="d-flex gap-2">
+                        {% if current_user.is_authenticated %}
+                            {% if members|length < team.max_participants %}
+                                <button class="btn btn-primary" onclick="joinTeam('{{ team.id }}')">
+                                    <i class="fas fa-plus me-2"></i>我要加入
+                                </button>
+                            {% else %}
+                                <button class="btn btn-warning" onclick="joinTeam('{{ team.id }}')">
+                                    <i class="fas fa-clock me-2"></i>候補登記
+                                </button>
+                            {% endif %}
+                        {% else %}
+                            <a href="{{ url_for('login') }}" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>登入後加入
+                            </a>
+                        {% endif %}
+                        <button class="btn btn-outline-secondary" onclick="window.history.back()">
+                            <i class="fas fa-arrow-left me-2"></i>返回
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Public Discussion -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-comments me-2"></i>公開討論區</h5>
+            </div>
+            <div class="card-body">
+                <div id="messagesContainer" style="max-height: 400px; overflow-y: auto;">
+                    {% for message in messages %}
+                    <div class="mb-3 border-bottom pb-2">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ message.user.nickname }}</strong>
+                            <small class="text-muted">{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                        <div class="mt-1">{{ message.message }}</div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if not messages %}
+                    <div class="text-center text-muted">還沒有留言，來當第一個留言的人吧！</div>
+                    {% endif %}
+                </div>
+                
+                {% if current_user.is_authenticated %}
+                <div class="mt-3">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="messageInput" placeholder="輸入留言..." onkeypress="handleEnter(event)" maxlength="500">
+                        <button class="btn btn-primary" onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <small class="text-muted">最多500字</small>
+                </div>
+                {% else %}
+                <div class="mt-3 text-center">
+                    <p class="text-muted">請 <a href="{{ url_for('login') }}">登入</a> 後參與討論</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Team Members -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-users me-2"></i>隊伍成員</h6>
+            </div>
+            <div class="card-body">
+                {% for member in members %}
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-user-circle fa-2x text-primary me-2"></i>
+                    <div>
+                        <div><a href="{{ url_for('user_profile', user_id=member.user.id) }}" class="text-decoration-none">{{ member.user.nickname }}</a></div>
+                        <small class="text-muted">{{ member.user.skill_level }} | {{ member.user.preferred_position }}</small>
+                        {% if member.user.id == team.organizer_id %}
+                        <span class="badge bg-warning ms-1">主辦</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if waitlist %}
+                <hr>
+                <h6 class="text-muted"><i class="fas fa-clock me-2"></i>候補名單</h6>
+                {% for member in waitlist %}
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-user-circle fa-2x text-muted me-2"></i>
+                    <div>
+                        <div><a href="{{ url_for('user_profile', user_id=member.user.id) }}" class="text-decoration-none text-muted">{{ member.user.nickname }}</a></div>
+                        <small class="text-muted">{{ member.user.skill_level }} | {{ member.user.preferred_position }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Quick Info -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>快速資訊</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <i class="fas fa-calendar me-2 text-primary"></i>
+                    <strong>活動日期</strong><br>
+                    <small>{{ team.start_time.strftime('%Y年%m月%d日') }}</small>
+                </div>
+                
+                <div class="mb-2">
+                    <i class="fas fa-clock me-2 text-primary"></i>
+                    <strong>活動時間</strong><br>
+                    <small>{{ team.start_time.strftime('%H:%M') }} - {{ team.end_time.strftime('%H:%M') }}</small>
+                </div>
+                
+                <div class="mb-2">
+                    <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                    <strong>地點</strong><br>
+                    <small>{{ team.location_venue }}</small>
+                </div>
+                
+                <div class="mb-2">
+                    <i class="fas fa-tag me-2 text-primary"></i>
+                    <strong>類型</strong><br>
+                    <small>{{ team.activity_type }}</small>
+                </div>
+                
+                <div class="alert alert-warning mt-3">
+                    <small><i class="fas fa-exclamation-triangle me-1"></i>
+                    活動前24小時內取消將被禁止參加活動7天</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function handleEnter(event) {
+    if (event.key === 'Enter') {
+        sendMessage();
+    }
+}
+
+async function sendMessage() {
+    const messageInput = document.getElementById('messageInput');
+    const message = messageInput.value.trim();
+    
+    if (!message) {
+        alert('請輸入留言內容');
+        return;
+    }
+    
+    if (message.length > 500) {
+        alert('留言內容不能超過500字');
+        return;
+    }
+    
+    // Disable button to prevent double submission
+    const sendButton = event.target;
+    sendButton.disabled = true;
+    sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    try {
+        const response = await fetch('/team/{{ team.id }}/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({ message: message })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            messageInput.value = '';
+            location.reload(); // Refresh to show new message
+        } else {
+            alert(result.error || '發送留言失敗');
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('發送留言失敗，請檢查網路連線');
+    } finally {
+        // Re-enable button
+        sendButton.disabled = false;
+        sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+    }
+}
+
+async function joinTeam(teamId) {
+    if (!confirm('確定要加入這個隊伍嗎？')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/join_team/' + teamId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(`${result.status}！`);
+            location.reload();
+        } else {
+            alert(result.error || '加入失敗');
+        }
+    } catch (error) {
+        console.error('Error joining team:', error);
+        alert('加入失敗，請檢查網路連線後重試');
+    }
+}
+
+// Helper function to get CSRF token
+function getCsrfToken() {
+    const token = document.querySelector('meta[name="csrf-token"]');
+    return token ? token.getAttribute('content') : '';
+}
+</script>
+{% endblock %}

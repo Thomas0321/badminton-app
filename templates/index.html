@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+
+{% block title %}首頁 - 羽球揪團{% endblock %}
+
+{% block content %}
+<div class="hero-section bg-primary text-white rounded p-5 mb-5">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="display-4 mb-3">
+                <i class="fas fa-shuttlecock-cock me-3"></i>羽球揪團平台
+            </h1>
+            <p class="lead mb-4">找到最適合的球友，享受羽球的樂趣！</p>
+            <div class="d-flex gap-3">
+                <button class="btn btn-light btn-lg" onclick="showTeams()">
+                    <i class="fas fa-search me-2"></i>📥 加入隊伍
+                </button>
+                <a href="{{ url_for('create_team') }}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-plus me-2"></i>➕ 建立隊伍
+                </a>
+            </div>
+        </div>
+        <div class="col-md-4 text-center">
+            <i class="fas fa-users fa-5x opacity-75"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Section -->
+<div class="card mb-4" id="filterSection" style="display: none;">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>篩選條件</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <label for="filterCity" class="form-label">縣市</label>
+                <select class="form-select" id="filterCity">
+                    <option value="">全部</option>
+                    <option value="台北市">台北市</option>
+                    <option value="新北市">新北市</option>
+                    <option value="桃園市">桃園市</option>
+                    <option value="台中市">台中市</option>
+                    <option value="台南市">台南市</option>
+                    <option value="高雄市">高雄市</option>
+                </select>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="filterVenue" class="form-label">球場地點</label>
+                <input type="text" class="form-control" id="filterVenue" placeholder="輸入球場名稱">
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="filterSkill" class="form-label">技術水平</label>
+                <select class="form-select" id="filterSkill">
+                    <option value="">全部</option>
+                    <option value="初學">初學</option>
+                    <option value="初級">初級</option>
+                    <option value="中級">中級</option>
+                    <option value="中高級">中高級</option>
+                    <option value="高級">高級</option>
+                    <option value="競技">競技</option>
+                </select>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="filterTime" class="form-label">時段</label>
+                <select class="form-select" id="filterTime">
+                    <option value="">全部</option>
+                    <option value="平日上午">平日上午</option>
+                    <option value="平日下午">平日下午</option>
+                    <option value="平日晚間">平日晚間</option>
+                    <option value="假日上午">假日上午</option>
+                    <option value="假日下午">假日下午</option>
+                    <option value="假日晚間">假日晚間</option>
+                </select>
+            </div>
+        </div>
+        <div class="text-center">
+            <button class="btn btn-primary" onclick="filterTeams()">
+                <i class="fas fa-search me-2"></i>搜尋
+            </button>
+            <button class="btn btn-outline-secondary ms-2" onclick="clearFilters()">
+                <i class="fas fa-times me-2"></i>清除
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Teams List -->
+<div id="teamsContainer" style="display: none;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3><i class="fas fa-list me-2"></i>可加入的隊伍</h3>
+        <button class="btn btn-outline-primary" onclick="refreshTeams()">
+            <i class="fas fa-sync-alt me-2"></i>重新整理
+        </button>
+    </div>
+    <div id="teamsList" class="row">
+        <!-- Teams will be loaded here -->
+    </div>
+</div>
+
+<!-- Loading Spinner -->
+<div id="loadingSpinner" class="text-center" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">載入中...</span>
+    </div>
+    <p class="mt-2">載入隊伍資訊中...</p>
+</div>
+
+<!-- Team Detail Modal -->
+<div class="modal fade" id="teamModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="teamModalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="teamModalBody">
+                <!-- Team details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                <button type="button" class="btn btn-primary" id="joinTeamBtn" onclick="joinTeam()">我要加入</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentTeamId = null;
+let allTeams = [];
+
+function showTeams() {
+    document.getElementById('filterSection').style.display = 'block';
+    document.getElementById('teamsContainer').style.display = 'block';
+    loadTeams();
+}
+
+async function loadTeams() {
+    document.getElementById('loadingSpinner').style.display = 'block';
+    
+    try {
+        const response = await fetch('/teams');
+        allTeams = await response.json();
+        displayTeams(allTeams);
+    } catch (error) {
+        console.error('載入隊伍失敗:', error);
+        alert('載入隊伍失敗，請重試');
+    } finally {
+        document.getElementById('loadingSpinner').style.display = 'none';
+    }
+}
+
+function displayTeams(teams) {
+    const container = document.getElementById('teamsList');
+    
+    if (teams.length === 0) {
+        container.innerHTML = '<div class="col-12"><div class="alert alert-info">目前沒有符合條件的隊伍</div></div>';
+        return;
+    }
+    
+    container.innerHTML = teams.map(team => `
+        <div class="col-md-6 mb-4">
+            <div class="card team-card h-100" onclick="showTeamDetail(${team.id})">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title">${team.name}</h5>
+                        <span class="badge bg-${team.current_members >= team.max_participants ? 'danger' : 'success'}">
+                            ${team.current_members}/${team.max_participants}人
+                        </span>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-user me-1"></i>主辦者：${team.organizer}
+                        </small>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <i class="fas fa-map-marker-alt me-1 text-primary"></i>
+                        <strong>${team.location_city}</strong> - ${team.location_venue}
+                    </div>
+                    
+                    <div class="mb-2">
+                        <i class="fas fa-clock me-1 text-primary"></i>
+                        ${formatDateTime(team.start_time)} - ${formatTime(team.end_time)}
+                    </div>
+                    
+                    <div class="mb-2">
+                        <span class="badge bg-info">${team.activity_type}</span>
+                        ${team.waitlist_count > 0 ? `<span class="badge bg-warning ms-1">候補 ${team.waitlist_count}人</span>` : ''}
+                    </div>
+                    
+                    ${team.description ? `<p class="card-text text-muted small">${team.description.substring(0, 100)}${team.description.length > 100 ? '...' : ''}</p>` : ''}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function formatDateTime(dateTimeStr) {
+    const date = new Date(dateTimeStr);
+    return date.toLocaleDateString('zh-TW') + ' ' + date.toLocaleTimeString('zh-TW', {hour: '2-digit', minute: '2-digit'});
+}
+
+function formatTime(dateTimeStr) {
+    const date = new Date(dateTimeStr);
+    return date.toLocaleTimeString('zh-TW', {hour: '2-digit', minute: '2-digit'});
+}
+
+function showTeamDetail(teamId) {
+    currentTeamId = teamId;
+    const team = allTeams.find(t => t.id === teamId);
+    
+    if (!team) return;
+    
+    document.getElementById('teamModalTitle').textContent = team.name;
+    
+    const isFull = team.current_members >= team.max_participants;
+    const joinBtn = document.getElementById('joinTeamBtn');
+    
+    if (isFull) {
+        joinBtn.textContent = '候補登記';
+        joinBtn.className = 'btn btn-warning';
+    } else {
+        joinBtn.textContent = '我要加入';
+        joinBtn.className = 'btn btn-primary';
+    }
+    
+    document.getElementById('teamModalBody').innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6><i class="fas fa-user me-2"></i>主辦者資訊</h6>
+                <p>${team.organizer}</p>
+                
+                <h6><i class="fas fa-map-marker-alt me-2"></i>活動地點</h6>
+                <p><strong>${team.location_city}</strong><br>
+                ${team.location_venue}<br>
+                <small class="text-muted">${team.location_address}</small></p>
+            </div>
+            <div class="col-md-6">
+                <h6><i class="fas fa-clock me-2"></i>活動時間</h6>
+                <p>${formatDateTime(team.start_time)}<br>
+                至 ${formatTime(team.end_time)}</p>
+                
+                <h6><i class="fas fa-users me-2"></i>參與狀況</h6>
+                <p>已報名：${team.current_members}/${team.max_participants}人<br>
+                ${team.waitlist_count > 0 ? `候補：${team.waitlist_count}人<br>` : ''}
+                活動類型：<span class="badge bg-info">${team.activity_type}</span></p>
+            </div>
+        </div>
+        
+        ${team.description ? `
+        <div class="mt-3">
+            <h6><i class="fas fa-info-circle me-2"></i>活動說明</h6>
+            <p>${team.description}</p>
+        </div>
+        ` : ''}
+        
+        <div class="mt-3">
+            <h6><i class="fas fa-comments me-2"></i>討論區</h6>
+            <div id="teamMessages" class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                <div class="text-center text-muted">載入留言中...</div>
+            </div>
+            <div class="mt-2">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="newMessage" placeholder="輸入留言...">
+                    <button class="btn btn-outline-primary" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    loadTeamMessages(teamId);
+    
+    const modal = new bootstrap.Modal(document.getElementById('teamModal'));
+    modal.show();
+}
+
+async function loadTeamMessages(teamId) {
+    try {
+        const response = await fetch(`/team/${teamId}/messages`);
+        const messages = await response.json();
+        
+        const container = document.getElementById('teamMessages');
+        
+        if (messages.length === 0) {
+            container.innerHTML = '<div class="text-center text-muted">還沒有留言</div>';
+            return;
+        }
+        
+        container.innerHTML = messages.map(msg => `
+            <div class="mb-2">
+                <strong>${msg.user_nickname}</strong>
+                <small class="text-muted">${msg.created_at}</small>
+                <div>${msg.message}</div>
+            </div>
+        `).join('');
+        
+        container.scrollTop = container.scrollHeight;
+    } catch (error) {
+        console.error('載入留言失敗:', error);
+    }
+}
+
+async function sendMessage() {
+    const messageInput = document.getElementById('newMessage');
+    const message = messageInput.value.trim();
+    
+    if (!message) return;
+    
+    try {
+        const response = await fetch(`/team/${currentTeamId}/messages`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: message })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            messageInput.value = '';
+            loadTeamMessages(currentTeamId);
+        } else {
+            alert('發送留言失敗');
+        }
+    } catch (error) {
+        alert('發送留言失敗');
+    }
+}
+
+async function joinTeam() {
+    if (!currentTeamId) return;
+    
+    try {
+        const response = await fetch(`/join_team/${currentTeamId}`, {
+            method: 'POST'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(`${result.status}！`);
+            const modal = bootstrap.Modal.getInstance(document.getElementById('teamModal'));
+            modal.hide();
+            refreshTeams();
+        } else {
+            alert(result.error || '加入失敗');
+        }
+    } catch (error) {
+        alert('加入失敗，請重試');
+    }
+}
+
+function filterTeams() {
+    const city = document.getElementById('filterCity').value;
+    const venue = document.getElementById('filterVenue').value.toLowerCase();
+    const skill = document.getElementById('filterSkill').value;
+    
+    const filtered = allTeams.filter(team => {
+        return (!city || team.location_city === city) &&
+               (!venue || team.location_venue.toLowerCase().includes(venue)) &&
+               (!skill || team.activity_type.includes(skill));
+    });
+    
+    displayTeams(filtered);
+}
+
+function clearFilters() {
+    document.getElementById('filterCity').value = '';
+    document.getElementById('filterVenue').value = '';
+    document.getElementById('filterSkill').value = '';
+    document.getElementById('filterTime').value = '';
+    displayTeams(allTeams);
+}
+
+function refreshTeams() {
+    loadTeams();
+}
+
+// Add some CSS for better UX
+const style = document.createElement('style');
+style.textContent = `
+    .team-card {
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .team-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .hero-section {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

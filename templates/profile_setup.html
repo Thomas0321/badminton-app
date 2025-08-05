@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}設定個人檔案 - 羽球揪團{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-user-plus me-2"></i>設定個人檔案</h4>
+            </div>
+            <div class="card-body">
+                <form id="profileForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nickname" class="form-label">暱稱 *</label>
+                            <input type="text" class="form-control" id="nickname" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="gender" class="form-label">性別 *</label>
+                            <select class="form-select" id="gender" required>
+                                <option value="">請選擇</option>
+                                <option value="男">男</option>
+                                <option value="女">女</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="experience_years" class="form-label">球齡（年）*</label>
+                            <input type="number" class="form-control" id="experience_years" min="0" max="50" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="preferred_position" class="form-label">擅長位置 *</label>
+                            <select class="form-select" id="preferred_position" required>
+                                <option value="">請選擇</option>
+                                <option value="前場">前場</option>
+                                <option value="後場">後場</option>
+                                <option value="左邊">左邊</option>
+                                <option value="右邊">右邊</option>
+                                <option value="不限">不限</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="skill_level" class="form-label">技術水平 *</label>
+                            <select class="form-select" id="skill_level" required>
+                                <option value="">請選擇</option>
+                                <option value="初學">初學</option>
+                                <option value="初級">初級</option>
+                                <option value="中級">中級</option>
+                                <option value="中高級">中高級</option>
+                                <option value="高級">高級</option>
+                                <option value="競技">競技</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="preferred_region" class="form-label">常用地區 *</label>
+                            <select class="form-select" id="preferred_region" required>
+                                <option value="">請選擇</option>
+                                <option value="台北市">台北市</option>
+                                <option value="新北市">新北市</option>
+                                <option value="桃園市">桃園市</option>
+                                <option value="台中市">台中市</option>
+                                <option value="台南市">台南市</option>
+                                <option value="高雄市">高雄市</option>
+                                <option value="基隆市">基隆市</option>
+                                <option value="新竹市">新竹市</option>
+                                <option value="嘉義市">嘉義市</option>
+                                <option value="新竹縣">新竹縣</option>
+                                <option value="苗栗縣">苗栗縣</option>
+                                <option value="彰化縣">彰化縣</option>
+                                <option value="南投縣">南投縣</option>
+                                <option value="雲林縣">雲林縣</option>
+                                <option value="嘉義縣">嘉義縣</option>
+                                <option value="屏東縣">屏東縣</option>
+                                <option value="宜蘭縣">宜蘭縣</option>
+                                <option value="花蓮縣">花蓮縣</option>
+                                <option value="台東縣">台東縣</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="notification_enabled" checked>
+                            <label class="form-check-label" for="notification_enabled">
+                                接收活動通知與提醒
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>完成設定
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('profileForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        nickname: document.getElementById('nickname').value,
+        gender: document.getElementById('gender').value,
+        experience_years: document.getElementById('experience_years').value,
+        preferred_position: document.getElementById('preferred_position').value,
+        skill_level: document.getElementById('skill_level').value,
+        preferred_region: document.getElementById('preferred_region').value,
+        notification_enabled: document.getElementById('notification_enabled').checked
+    };
+    
+    try {
+        const response = await fetch('/profile_setup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            window.location.href = '/';
+        } else {
+            alert('設定失敗，請重試');
+        }
+    } catch (error) {
+        alert('發生錯誤，請重試');
+    }
+});
+</script>
+{% endblock %}

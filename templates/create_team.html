@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}建立隊伍 - 羽球揪團{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-plus me-2"></i>建立新隊伍</h4>
+            </div>
+            <div class="card-body">
+                <form id="createTeamForm">
+                    <div class="mb-3">
+                        <label for="teamName" class="form-label">隊伍名稱 *</label>
+                        <input type="text" class="form-control" id="teamName" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="locationCity" class="form-label">縣市 *</label>
+                            <select class="form-select" id="locationCity" required>
+                                <option value="">請選擇</option>
+                                <option value="台北市">台北市</option>
+                                <option value="新北市">新北市</option>
+                                <option value="桃園市">桃園市</option>
+                                <option value="台中市">台中市</option>
+                                <option value="台南市">台南市</option>
+                                <option value="高雄市">高雄市</option>
+                                <option value="基隆市">基隆市</option>
+                                <option value="新竹市">新竹市</option>
+                                <option value="嘉義市">嘉義市</option>
+                                <option value="新竹縣">新竹縣</option>
+                                <option value="苗栗縣">苗栗縣</option>
+                                <option value="彰化縣">彰化縣</option>
+                                <option value="南投縣">南投縣</option>
+                                <option value="雲林縣">雲林縣</option>
+                                <option value="嘉義縣">嘉義縣</option>
+                                <option value="屏東縣">屏東縣</option>
+                                <option value="宜蘭縣">宜蘭縣</option>
+                                <option value="花蓮縣">花蓮縣</option>
+                                <option value="台東縣">台東縣</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="locationVenue" class="form-label">球場名稱 *</label>
+                            <input type="text" class="form-control" id="locationVenue" placeholder="例：大安運動中心" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="locationAddress" class="form-label">詳細地址 *</label>
+                        <input type="text" class="form-control" id="locationAddress" placeholder="完整地址" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="startTime" class="form-label">開始時間 *</label>
+                            <input type="datetime-local" class="form-control" id="startTime" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="endTime" class="form-label">結束時間 *</label>
+                            <input type="datetime-local" class="form-control" id="endTime" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="maxParticipants" class="form-label">招募人數 *</label>
+                            <select class="form-select" id="maxParticipants" required>
+                                <option value="">請選擇</option>
+                                <option value="2">2人</option>
+                                <option value="3">3人</option>
+                                <option value="4">4人</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="activityType" class="form-label">活動類型 *</label>
+                            <select class="form-select" id="activityType" required>
+                                <option value="">請選擇</option>
+                                <option value="初學練習">初學練習</option>
+                                <option value="初級友誼賽">初級友誼賽</option>
+                                <option value="中級練習">中級練習</option>
+                                <option value="中級友誼賽">中級友誼賽</option>
+                                <option value="高級練習">高級練習</option>
+                                <option value="競技比賽">競技比賽</option>
+                                <option value="雙打為主">雙打為主</option>
+                                <option value="單打配對">單打配對</option>
+                                <option value="休閒娛樂">休閒娛樂</option>
+                                <option value="技術交流">技術交流</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">活動說明與備註</label>
+                        <textarea class="form-control" id="description" rows="4" placeholder="請說明活動內容、是否提供羽球、是否有教學、是否需自備拍子等資訊..."></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="coverImage" class="form-label">封面圖片（選填）</label>
+                        <input type="file" class="form-control" id="coverImage" accept="image/*">
+                        <div class="form-text">支援 JPG、PNG 格式，檔案大小不超過 5MB</div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>提醒：</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>每個隊伍最多4人（包含主辦者）</li>
+                            <li>建立後將自動顯示於公開隊伍清單</li>
+                            <li>活動前24小時內取消將被禁止建立隊伍7天</li>
+                            <li>請確實填寫活動資訊，避免造成其他球友困擾</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-plus me-2"></i>建立隊伍
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Set minimum datetime to current time
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const minDateTime = tomorrow.toISOString().slice(0, 16);
+    
+    document.getElementById('startTime').min = minDateTime;
+    document.getElementById('endTime').min = minDateTime;
+    
+    // Update end time minimum when start time changes
+    document.getElementById('startTime').addEventListener('change', function() {
+        const startTime = new Date(this.value);
+        const minEndTime = new Date(startTime.getTime() + 60 * 60 * 1000); // Add 1 hour
+        document.getElementById('endTime').min = minEndTime.toISOString().slice(0, 16);
+    });
+});
+
+document.getElementById('createTeamForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const startTime = new Date(document.getElementById('startTime').value);
+    const endTime = new Date(document.getElementById('endTime').value);
+    
+    // Validation
+    if (endTime <= startTime) {
+        alert('結束時間必須晚於開始時間');
+        return;
+    }
+    
+    if (startTime <= new Date()) {
+        alert('開始時間必須是未來時間');
+        return;
+    }
+    
+    const formData = {
+        name: document.getElementById('teamName').value,
+        location_city: document.getElementById('locationCity').value,
+        location_venue: document.getElementById('locationVenue').value,
+        location_address: document.getElementById('locationAddress').value,
+        start_time: startTime.toISOString(),
+        end_time: endTime.toISOString(),
+        max_participants: document.getElementById('maxParticipants').value,
+        activity_type: document.getElementById('activityType').value,
+        description: document.getElementById('description').value
+    };
+    
+    try {
+        const response = await fetch('/create_team', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('隊伍建立成功！');
+            window.location.href = '/';
+        } else {
+            alert(result.error || '建立失敗，請重試');
+        }
+    } catch (error) {
+        alert('發生錯誤，請重試');
+    }
+});
+</script>
+{% endblock %}
