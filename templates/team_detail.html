@@ -117,9 +117,10 @@
                     <i class="fas fa-user-circle fa-2x text-primary me-2"></i>
                     <div>
                         <div><a href="{{ url_for('user_profile', user_id=member.user.id) }}" class="text-decoration-none">{{ member.user.nickname }}</a></div>
-                        <small class="text-muted">{{ member.user.skill_level }} | {{ member.user.preferred_position }}</small>
+                        <small class="text-muted">分級：{{ member.user.skill_level }} | {{ member.user.preferred_position }}</small>
+                        <div><small class="text-muted">電話：{{ member.user.phone }}</small></div>
                         {% if member.user.id == team.organizer_id %}
-                        <span class="badge bg-warning ms-1">主辦</span>
+                        <span class="badge bg-info ms-2">主辦者</span>
                         {% endif %}
                     </div>
                 </div>
@@ -133,7 +134,7 @@
                     <i class="fas fa-user-circle fa-2x text-muted me-2"></i>
                     <div>
                         <div><a href="{{ url_for('user_profile', user_id=member.user.id) }}" class="text-decoration-none text-muted">{{ member.user.nickname }}</a></div>
-                        <small class="text-muted">{{ member.user.skill_level }} | {{ member.user.preferred_position }}</small>
+                        <small class="text-muted">分級：{{ member.user.skill_level }} | {{ member.user.preferred_position }}</small>
                     </div>
                 </div>
                 {% endfor %}

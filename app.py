@@ -8,6 +8,16 @@ import secrets
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
 
+from db_autofix import check_and_rebuild_db
+
+# Render 部署會有 /data 目錄，本地則 fallback
+if os.path.exists('/data'):
+    DB_PATH = '/data/badminton.db'
+else:
+    DB_PATH = os.path.abspath('./badminton.db')
+
+check_and_rebuild_db(DB_PATH)
+
 app = Flask(__name__)
 # --- Render/local 路徑與環境變數設定 ---
 import platform
@@ -51,6 +61,7 @@ class User(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)  # 新增帳號欄位
     password_hash = db.Column(db.String(128), nullable=False)  # 新增密碼欄位
     nickname = db.Column(db.String(50), nullable=False)
+    phone = db.Column(db.String(20), nullable=False)  # 新增電話欄位
     gender = db.Column(db.String(10), nullable=False)
     experience_years = db.Column(db.Integer, nullable=False)
     preferred_position = db.Column(db.String(50), nullable=False)
@@ -122,31 +133,9 @@ class Cancellation(db.Model):
 @app.route('/')
 def index():
     if 'user_id' not in session:
-        return redirect(url_for('profile_setup'))
+        return redirect(url_for('login'))
     return render_template('index.html')
 
-@app.route('/profile_setup', methods=['GET', 'POST'])
-def profile_setup():
-    if request.method == 'POST':
-        data = request.get_json()
-        
-        user = User(
-            nickname=data['nickname'],
-            gender=data['gender'],
-            experience_years=int(data['experience_years']),
-            preferred_position=data['preferred_position'],
-            skill_level=data['skill_level'],
-            preferred_region=data['preferred_region'],
-            notification_enabled=data.get('notification_enabled', True)
-        )
-        
-        db.session.add(user)
-        db.session.commit()
-        
-        session['user_id'] = user.id
-        return jsonify({'success': True})
-    
-    return render_template('profile_setup.html')
 
 @app.route('/teams')
 def teams():
@@ -238,6 +227,11 @@ def join_team(team_id):
     
     team = Team.query.get_or_404(team_id)
     
+    # 新增：活動開始前2小時禁止加入
+    now = datetime.utcnow()
+    if (team.start_time - now).total_seconds() < 2 * 3600:
+        return jsonify({'error': '距離活動開始已不足2小時，無法再加入此隊伍'}), 403
+    
     # Check if already a member
     existing_member = TeamMember.query.filter_by(team_id=team_id, user_id=session['user_id']).first()
     if existing_member:
@@ -258,6 +252,20 @@ def join_team(team_id):
     
     status = '候補' if is_waitlist else '成功加入'
     return jsonify({'success': True, 'status': status})
+
+# 自動清理過期隊伍（活動結束後自動刪除隊伍與成員、留言等）
+def clean_expired_teams():
+    now = datetime.utcnow()
+    expired_teams = Team.query.filter(Team.end_time < now).all()
+    for team in expired_teams:
+        # 刪除隊伍成員
+        TeamMember.query.filter_by(team_id=team.id).delete()
+        # 刪除隊伍留言
+        TeamMessage.query.filter_by(team_id=team.id).delete()
+        # 刪除隊伍本身
+        db.session.delete(team)
+    db.session.commit()
+
 
 @app.route('/leave_team/<int:team_id>', methods=['POST'])
 def leave_team(team_id):
@@ -347,6 +355,14 @@ def user_profile(user_id):
     return render_template('user_profile.html', user=user)
 
 # ====== 註冊、登入、登出功能 ======
+
+@app.route('/profile_setup', methods=['GET', 'POST'])
+def profile_setup():
+    if request.method == 'POST':
+        # 這裡可根據需求儲存資料到資料庫
+        return jsonify({'success': True})
+    return render_template('profile_setup.html')
+
 from flask import flash
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -355,11 +371,13 @@ def register():
         username = request.form['username'].strip()
         password = request.form['password']
         nickname = request.form['nickname'].strip()
+        phone = request.form['phone'].strip()
         gender = request.form['gender']
         experience_years = request.form['experience_years']
         preferred_position = request.form['preferred_position']
         skill_level = request.form['skill_level']
         preferred_region = request.form['preferred_region']
+        notification_enabled = request.form.get('notification_enabled') == 'on'
         
         if User.query.filter_by(username=username).first():
             flash('帳號已被註冊，請換一個', 'danger')
@@ -368,11 +386,13 @@ def register():
         user = User(
             username=username,
             nickname=nickname,
+            phone=phone,
             gender=gender,
             experience_years=int(experience_years),
             preferred_position=preferred_position,
             skill_level=skill_level,
-            preferred_region=preferred_region
+            preferred_region=preferred_region,
+            notification_enabled=notification_enabled
         )
         user.set_password(password)
         db.session.add(user)
@@ -388,7 +408,9 @@ def login():
         username = request.form['username'].strip()
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
-        if user and user.check_password(password):
+        if not user:
+            flash('查無此帳號，請先註冊', 'danger')
+        elif user.check_password(password):
             session['user_id'] = user.id
             flash('登入成功！', 'success')
             return redirect(url_for('index'))
@@ -409,6 +431,6 @@ def logout():
 with app.app_context():
     db.create_all()
 
-# 若本地開發要用 app.run()，請自行取消註解下方程式：
-# if __name__ == '__main__':
-#     app.run()  # 請勿在生產環境開啟 debug=True
+# 若本地開發自動啟動 Flask 伺服器
+if __name__ == '__main__':
+    app.run(debug=True)  # 本地開發可開啟 debug
