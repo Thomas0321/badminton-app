@@ -1,231 +1,393 @@
-/* Custom styles for the badminton website */
+/* 彩虹色調羽球網站CSS樣式 - 根據圖片色彩設計 */
+
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Fredoka:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap');
 
 :root {
-    --primary-color: #007bff;
-    --secondary-color: #6c757d;
-    --success-color: #28a745;
-    --info-color: #17a2b8;
-    --warning-color: #ffc107;
-    --danger-color: #dc3545;
-    --light-color: #f8f9fa;
-    --dark-color: #343a40;
+    /* 彩虹色調主色系 - 採用圖片中的柔和彩虹色 */
+    --primary-color: #B8A9E8;        /* 淺紫色 */
+    --secondary-color: #A8D8E8;      /* 淺藍色 */
+    --accent-color: #E8B8D8;         /* 粉紅色 */
+    --success-color: #B8E8A8;        /* 淺綠色 */
+    --info-color: #D8E8A8;           /* 淺黃綠色 */
+    --warning-color: #E8D8A8;        /* 淺黃色 */
+    --danger-color: #E8A8B8;         /* 淺紅色 */
+    --light-color: #F8F5FF;          /* 淡紫白色 */
+    --dark-color: #6B5B95;           /* 深紫色 */
+    
+    /* 主要背景色系 */
+    --main-bg: #F8F5FF;              /* 淡紫白色 */
+    --main-pink: #E8B8D8;            /* 主色調：粉紅色 */
+    --main-yellow: #E8D8A8;          /* 輔助色：淺黃色 */
+    --main-green: #B8E8A8;           /* 點綴色：淺綠色 */
+    --main-red: #E8A8B8;             /* 強調色：淺紅色 */
+    --main-beige: #D8E8A8;           /* 替代色：淺黃綠色 */
+    --main-text: #6B5B95;            /* 主要文字色 */
+    --secondary-text: #8B7BA5;       /* 次要文字色 */
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f5f5;
+    font-family: 'Noto Sans TC', 'Microsoft JhengHei', Arial, sans-serif;
+    background: linear-gradient(135deg, var(--main-bg) 0%, #E8F5FF 50%, #FFE8F5 100%);
+    color: #6B5B95;
+    letter-spacing: 0.02em;
+    line-height: 1.6;
 }
 
-.navbar-brand {
-    font-weight: bold;
-    font-size: 1.5rem;
+/* 導航欄優化 */
+.navbar {
+    background: rgba(248, 245, 255, 0.95);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 2px 20px rgba(184, 169, 232, 0.15);
+    border-bottom: 1px solid rgba(184, 169, 232, 0.1);
 }
 
+.navbar-brand strong {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 50%, var(--secondary-color) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.1em;
+    text-shadow: 0 4px 15px rgba(184, 169, 232, 0.2);
+    padding: 0 12px;
+    border-radius: 16px;
+    position: relative;
+}
+
+.navbar-brand strong::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    border-radius: 20px;
+    opacity: 0.1;
+    z-index: -1;
+}
+
+/* 英雄區塊優化 */
 .hero-section {
-    background: linear-gradient(135deg, var(--primary-color), #0056b3);
-    border-radius: 15px;
-    margin-bottom: 2rem;
+    /* 改為更柔和的冷色系（淡靛藍→淡青綠）漸層 */
+    background: linear-gradient(135deg, #9f93e9 0%, #BEEAF4 100%);
+    border-radius: 40px;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 20px 60px rgba(184, 169, 232, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
 }
 
+/* 英雄區標題強化 */
+.hero-section .display-4 {
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* 柔化整體視覺的半透明白色覆層 */
+    background: rgba(255, 255, 255, 0.18);
+    pointer-events: none;
+}
+
+/* 卡片設計優化 */
 .card {
-    border: none;
-    border-radius: 15px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(184, 169, 232, 0.15);
+    border: 1px solid rgba(184, 169, 232, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
 }
 
 .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 20px 50px rgba(184, 169, 232, 0.25);
+    transform: translateY(-8px) scale(1.02);
+    border-color: rgba(184, 169, 232, 0.2);
 }
 
 .card-header {
-    border-radius: 15px 15px 0 0 !important;
-    border-bottom: none;
+    background: linear-gradient(135deg, var(--accent-color), rgba(184, 169, 232, 0.1));
+    border-radius: 24px 24px 0 0 !important;
+    border-bottom: 1px solid rgba(184, 169, 232, 0.15);
     font-weight: 600;
+    color: #6B5B95;
 }
 
+/* 團隊卡片特殊樣式 */
 .team-card {
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.team-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(184, 169, 232, 0.15), transparent);
+    transition: left 0.5s ease;
+}
+
+.team-card:hover::before {
+    left: 100%;
 }
 
 .team-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-}
-
-.team-card .card-body {
-    padding: 1.5rem;
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 25px 60px rgba(184, 169, 232, 0.3);
 }
 
 .team-card .card-title {
     color: var(--primary-color);
-    font-weight: 600;
+    font-weight: 700;
     margin-bottom: 1rem;
 }
 
-.badge {
-    font-size: 0.75rem;
-    padding: 0.5em 0.75em;
-    border-radius: 50px;
-}
-
+/* 按鈕設計優化 */
 .btn {
-    border-radius: 50px;
-    font-weight: 500;
-    padding: 0.5rem 1.5rem;
-    transition: all 0.3s ease;
+    border-radius: 25px;
+    font-weight: 600;
+    padding: 0.7rem 2rem;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 50%, var(--secondary-color) 100%);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 15px rgba(184, 169, 232, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 1rem;
+    position: relative;
+    overflow: hidden;
 }
 
-.btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn:hover, .btn:focus {
+    background: linear-gradient(135deg, var(--success-color) 0%, var(--warning-color) 50%, var(--danger-color) 100%);
+    color: #fff;
+    box-shadow: 0 8px 25px rgba(184, 169, 232, 0.4);
+    transform: translateY(-3px) scale(1.05);
 }
 
 .btn-lg {
-    padding: 0.75rem 2rem;
+    padding: 1rem 2.5rem;
     font-size: 1.1rem;
 }
 
+/* 表單元素優化 */
 .form-control, .form-select {
-    border-radius: 10px;
-    border: 2px solid #e9ecef;
-    padding: 0.75rem 1rem;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+    border: 2px solid rgba(184, 169, 232, 0.2);
+    padding: 0.8rem 1.2rem;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.9);
+    color: #6B5B95;
 }
 
 .form-control:focus, .form-select:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(184, 169, 232, 0.25);
+    background: #fff;
 }
 
 .form-label {
     font-weight: 600;
-    color: var(--dark-color);
-    margin-bottom: 0.5rem;
+    color: #6B5B95;
+    margin-bottom: 0.7rem;
 }
 
-.input-group .btn {
-    border-radius: 0 10px 10px 0;
+/* 標籤優化 */
+.badge {
+    font-size: 0.8rem;
+    padding: 0.5em 1em;
+    border-radius: 50px;
+    background: linear-gradient(135deg, var(--success-color) 0%, var(--info-color) 100%);
+    color: #6B5B95;
+    display: inline-block;
+    font-weight: 600;
 }
 
-.input-group .form-control {
-    border-radius: 10px 0 0 10px;
-}
-
+/* 警告框優化 */
 .alert {
-    border-radius: 10px;
-    border: none;
-    padding: 1rem 1.5rem;
-}
-
-.modal-content {
     border-radius: 15px;
     border: none;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    padding: 1.2rem 1.8rem;
+    background: linear-gradient(135deg, var(--accent-color), rgba(184, 169, 232, 0.1));
+    color: #6B5B95;
+    box-shadow: 0 4px 15px rgba(184, 169, 232, 0.2);
+}
+
+/* 模態框優化 */
+.modal-content {
+    border-radius: 24px;
+    border: none;
+    box-shadow: 0 20px 60px rgba(184, 169, 232, 0.35);
+    background: rgba(248, 245, 255, 0.98);
+    backdrop-filter: blur(20px);
 }
 
 .modal-header {
-    border-bottom: 1px solid #e9ecef;
-    border-radius: 15px 15px 0 0;
+    border-bottom: 1px solid rgba(184, 169, 232, 0.2);
+    border-radius: 24px 24px 0 0;
+    background: linear-gradient(135deg, var(--accent-color), transparent);
 }
 
 .modal-footer {
-    border-top: 1px solid #e9ecef;
-    border-radius: 0 0 15px 15px;
+    border-top: 1px solid rgba(184, 169, 232, 0.2);
+    border-radius: 0 0 24px 24px;
 }
 
-.spinner-border {
-    width: 3rem;
-    height: 3rem;
+/* 標題樣式優化 */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Noto Sans TC', 'Microsoft JhengHei', Arial, sans-serif;
+    color: #B8A9E8;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.2rem;
 }
 
-.text-primary {
-    color: var(--primary-color) !important;
+/* 區塊樣式優化 */
+.section {
+    background: linear-gradient(135deg, var(--accent-color) 0%, rgba(248, 245, 255, 0.8) 100%);
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 8px 25px rgba(184, 169, 232, 0.15);
+    border: 1px solid rgba(184, 169, 232, 0.1);
 }
 
-.bg-primary {
-    background-color: var(--primary-color) !important;
+/* 分隔線優化 */
+hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), var(--secondary-color), var(--success-color), transparent);
+    margin: 2.5rem 0;
+    opacity: 0.6;
 }
 
-.text-muted {
-    color: #6c757d !important;
+/* 自定義滾動條 */
+::-webkit-scrollbar {
+    width: 10px;
 }
 
-/* Custom animations */
+::-webkit-scrollbar-track {
+    background: var(--accent-color);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--success-color), var(--warning-color));
+}
+
+.bg-primary-color {
+    background: var(--primary-color) !important;
+}
+
+.card-header.bg-success {
+    background: linear-gradient(120deg, #E8B8D8 0%, #B8A9E8 50%, #A8D8E8 100%) !important;
+    color: #fff !important;
+}
+
+footer {
+    margin-top: auto;
+    background: linear-gradient(135deg, var(--light-color) 0%, var(--accent-color) 100%);
+    border-top: 1px solid rgba(184, 169, 232, 0.2);
+    color: var(--secondary-text);
+}
+
+/* 狀態指示器 */
+.status-online {
+    color: var(--success-color);
+}
+
+.status-offline {
+    color: var(--secondary-color);
+}
+
+.status-banned {
+    color: var(--danger-color);
+}
+
+/* 用戶頭像 */
+.user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(184, 169, 232, 0.3);
+}
+
+/* 訊息容器 */
+.message-container {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid rgba(184, 169, 232, 0.2);
+    border-radius: 15px;
+    padding: 1.2rem;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+}
+
+.message-item {
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(184, 169, 232, 0.1);
+}
+
+.message-item:last-child {
+    border-bottom: none;
+}
+
+/* 動畫效果 */
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(30px);
     }
     to {
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-.fade-in {
-    animation: fadeIn 0.5s ease-out;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    .hero-section {
-        padding: 2rem !important;
-        text-align: center;
-    }
-    
-    .hero-section .display-4 {
-        font-size: 2rem;
-    }
-    
-    .card-body {
-        padding: 1rem;
-    }
-    
-    .btn-lg {
-        padding: 0.5rem 1.5rem;
-        font-size: 1rem;
-    }
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #0056b3;
-}
-
-/* Footer styles */
-footer {
-    margin-top: auto;
-    background-color: var(--light-color) !important;
-    border-top: 1px solid #e9ecef;
-}
-
-/* Loading states */
-.loading {
-    opacity: 0.6;
-    pointer-events: none;
-}
-
-/* Success states */
-.success-animation {
-    animation: pulse 0.5s ease-in-out;
 }
 
 @keyframes pulse {
@@ -240,69 +402,204 @@ footer {
     }
 }
 
-/* Message styles */
-.message-container {
-    max-height: 300px;
-    overflow-y: auto;
-    border: 1px solid #e9ecef;
-    border-radius: 10px;
-    padding: 1rem;
-    background-color: white;
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
 }
 
-.message-item {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #f8f9fa;
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
 }
 
-.message-item:last-child {
-    border-bottom: none;
+.success-animation {
+    animation: pulse 0.5s ease-in-out;
 }
 
-/* User profile styles */
-.user-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: var(--primary-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.5rem;
-    font-weight: bold;
+/* 載入狀態 */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
 }
 
-/* Status indicators */
-.status-online {
-    color: var(--success-color);
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -200%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(184, 169, 232, 0.2), transparent);
+    animation: shimmer 2s infinite;
 }
 
-.status-offline {
-    color: var(--secondary-color);
+/* 實用工具類 */
+.shadow-soft {
+    box-shadow: 0 5px 20px rgba(184, 169, 232, 0.2) !important;
 }
 
-.status-banned {
-    color: var(--danger-color);
+.shadow-hover {
+    transition: box-shadow 0.3s ease;
 }
 
-/* Utility classes */
-.shadow-sm {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+.shadow-hover:hover {
+    box-shadow: 0 10px 30px rgba(184, 169, 232, 0.3) !important;
 }
 
-.shadow {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
-}
-
-.shadow-lg {
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1) !important;
-}
-
-.rounded-lg {
-    border-radius: 15px !important;
-}
-
-.rounded-xl {
+.rounded-soft {
     border-radius: 20px !important;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem !important;
+        text-align: center;
+        border-radius: 20px;
+    }
+    
+    .hero-section .display-4 {
+        font-size: 2rem;
+    }
+    
+    .card-body {
+        padding: 1.2rem;
+    }
+    
+    .btn-lg {
+        padding: 0.8rem 1.8rem;
+        font-size: 1rem;
+    }
+    
+    .navbar-brand strong {
+        font-size: 1.8rem;
+    }
+    
+    .section {
+        padding: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .btn {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .navbar-brand strong {
+        font-size: 1.6rem;
+    }
+}
+
+/* 互動狀態強化：按鈕的 hover/active/disabled 與一致過渡 */
+.btn {
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+    will-change: transform, box-shadow;
+}
+
+.btn:hover:not(:disabled):not(.disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(184, 169, 232, 0.25);
+}
+
+.btn:active:not(:disabled):not(.disabled),
+.btn.active:not(:disabled):not(.disabled) {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(184, 169, 232, 0.2);
+}
+
+.btn:disabled,
+.btn.disabled {
+    opacity: 0.6;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+/* 鍵盤可存取性：focus-visible 外框（按鈕與表單） */
+.btn:focus {
+    outline: none;
+}
+
+.btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 0.25rem rgba(184, 169, 232, 0.5), 0 8px 20px rgba(184, 169, 232, 0.25);
+    transform: translateY(-1px);
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.25rem rgba(184, 169, 232, 0.4);
+    border-color: rgba(184, 169, 232, 0.6);
+}
+
+/* 邊框加粗：Outline 按鈕與表單元件 */
+.btn-outline-primary,
+.btn-outline-secondary,
+.btn-outline-success,
+.btn-outline-danger,
+.btn-outline-warning,
+.btn-outline-info,
+.btn-outline-light,
+.btn-outline-dark {
+    border-width: 2px;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-secondary:hover,
+.btn-outline-success:hover,
+.btn-outline-danger:hover,
+.btn-outline-warning:hover,
+.btn-outline-info:hover,
+.btn-outline-light:hover,
+.btn-outline-dark:hover,
+.btn-outline-primary:active,
+.btn-outline-secondary:active,
+.btn-outline-success:active,
+.btn-outline-danger:active,
+.btn-outline-warning:active,
+.btn-outline-info:active,
+.btn-outline-light:active,
+.btn-outline-dark:active,
+.btn-outline-primary.active,
+.btn-outline-secondary.active,
+.btn-outline-success.active,
+.btn-outline-danger.active,
+.btn-outline-warning.active,
+.btn-outline-info.active,
+.btn-outline-light.active,
+.btn-outline-dark.active {
+    border-width: 2px; /* 維持一致避免 hover/active 位移 */
+}
+
+/* 表單元件統一較粗的邊框，提升可視性 */
+.form-control,
+.form-select,
+.form-check-input {
+    border-width: 2px;
+}
+
+/* 動畫偏好：減少動效 */
+@media (prefers-reduced-motion: reduce) {
+    .btn {
+        transition: none;
+    }
 }

@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+import re
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import os
@@ -7,6 +8,13 @@ import uuid
 import secrets
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
+
+# 自動載入 .env 檔案
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 from db_autofix import check_and_rebuild_db
 
@@ -65,12 +73,14 @@ class User(db.Model):
     gender = db.Column(db.String(10), nullable=False)
     experience_years = db.Column(db.Integer, nullable=False)
     preferred_position = db.Column(db.String(50), nullable=False)
-    skill_level = db.Column(db.String(20), nullable=False)
-    preferred_region = db.Column(db.String(100), nullable=False)
-    notification_enabled = db.Column(db.Boolean, default=True)
-    cancellation_count = db.Column(db.Integer, default=0)
-    ban_until = db.Column(db.DateTime, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    skill_level = db.Column(db.Integer, nullable=False)  # 技術等級 1~18
+    play_style = db.Column(db.String(20), nullable=False, default='防守型')  # 擅長打法：雙打/單打/都可以
+    preferred_time = db.Column(db.String(50), nullable=False)  # 偏好時段
+    bio = db.Column(db.Text)  # 自我介紹
+    contact = db.Column(db.String(100), nullable=False)  # 聯絡方式
+    preferred_region = db.Column(db.String(50), nullable=False)  # 偏好地區
+    notification_enabled = db.Column(db.Boolean, default=True)  # 通知設定
+    ban_until = db.Column(db.DateTime)  # 禁令到期時間
 
     def set_password(self, password):
         from werkzeug.security import generate_password_hash
@@ -164,6 +174,8 @@ def teams():
             'id': team.id,
             'name': team.name,
             'organizer': team.organizer.nickname,
+            'organizer_gender': team.organizer.gender,
+            'organizer_skill_level': team.organizer.skill_level,
             'location_city': team.location_city,
             'location_venue': team.location_venue,
             'location_address': team.location_address,
@@ -313,7 +325,8 @@ def team_detail(team_id):
     waitlist = TeamMember.query.filter_by(team_id=team_id, is_waitlist=True).all()
     messages = TeamMessage.query.filter_by(team_id=team_id, is_public=True).order_by(TeamMessage.created_at.desc()).all()
     
-    return render_template('team_detail.html', team=team, members=members, waitlist=waitlist, messages=messages)
+    from datetime import timedelta
+    return render_template('team_detail.html', team=team, members=members, waitlist=waitlist, messages=messages, timedelta=timedelta)
 
 @app.route('/team/<int:team_id>/messages', methods=['GET', 'POST'])
 def team_messages(team_id):
@@ -352,16 +365,38 @@ def team_messages(team_id):
 @app.route('/user/<int:user_id>')
 def user_profile(user_id):
     user = User.query.get_or_404(user_id)
-    return render_template('user_profile.html', user=user)
+    memberships = TeamMember.query.filter_by(user_id=user.id).join(Team).order_by(Team.start_time.desc()).all()
+    return render_template('user_profile.html', user=user, memberships=memberships)
 
 # ====== 註冊、登入、登出功能 ======
 
 @app.route('/profile_setup', methods=['GET', 'POST'])
 def profile_setup():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    user = User.query.get(session['user_id'])
     if request.method == 'POST':
-        # 這裡可根據需求儲存資料到資料庫
+        data = request.get_json()
+        # Optional phone update validation if provided
+        if data and 'phone' in data and data['phone']:
+            digits_only = re.sub(r'\D', '', data['phone'])
+            if len(digits_only) != 10:
+                return jsonify({'success': False, 'error': '電話需為10位數字（例如：0912345678）'}), 400
+            user.phone = digits_only
+        user.nickname = data.get('nickname', user.nickname)
+        user.gender = data.get('gender', user.gender)
+        user.experience_years = int(data.get('experience_years', user.experience_years))
+        user.preferred_position = data.get('preferred_position', user.preferred_position)
+        user.skill_level = int(data.get('skill_level', user.skill_level))
+        user.play_style = data.get('play_style', user.play_style or '防守型')
+        user.preferred_time = data.get('preferred_time', user.preferred_time)
+        user.preferred_region = data.get('preferred_region', user.preferred_region)
+        user.contact = data.get('contact', user.contact)
+        user.bio = data.get('bio', user.bio)
+        user.notification_enabled = bool(data.get('notification_enabled', True))
+        db.session.commit()
         return jsonify({'success': True})
-    return render_template('profile_setup.html')
+    return render_template('profile_setup.html', user=user)
 
 from flask import flash
 
@@ -383,14 +418,24 @@ def register():
             flash('帳號已被註冊，請換一個', 'danger')
             return render_template('register.html')
         
+        # 驗證電話必須為10碼數字（允許輸入中有非數字符號，但最終僅計算數字）
+        digits_only = re.sub(r'\D', '', phone)
+        if len(digits_only) != 10:
+            flash('電話需為10位數字，請重新輸入（例如：0912345678）', 'danger')
+            return render_template('register.html')
+        
         user = User(
             username=username,
             nickname=nickname,
-            phone=phone,
+            phone=digits_only,
             gender=gender,
             experience_years=int(experience_years),
             preferred_position=preferred_position,
             skill_level=skill_level,
+            play_style=request.form.get('play_style', '防守型'),
+            preferred_time=request.form.get('preferred_time', '晚上'),
+            bio=request.form.get('bio', ''),
+            contact=request.form.get('contact', ''),
             preferred_region=preferred_region,
             notification_enabled=notification_enabled
         )
@@ -424,6 +469,17 @@ def logout():
     flash('已登出', 'info')
     return redirect(url_for('login'))
 
+# 查看自己已報名的隊伍
+@app.route('/my_teams')
+def my_teams():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    user_id = session['user_id']
+    memberships = TeamMember.query.filter_by(user_id=user_id).join(Team).order_by(Team.start_time.desc()).all()
+    # memberships: List[TeamMember]，每個有 team, is_waitlist
+    return render_template('my_teams.html', memberships=memberships)
+
+
 # Render/gunicorn 會自動以 app:app 啟動
 # 確保 /data/uploads 資料夾存在且可寫入
 
@@ -433,4 +489,6 @@ with app.app_context():
 
 # 若本地開發自動啟動 Flask 伺服器
 if __name__ == '__main__':
-    app.run(debug=True)  # 本地開發可開啟 debug
+    # 依環境變數控制 debug（預設為 False）。雲端以 gunicorn 啟動，不會執行此段。
+    debug_flag = os.environ.get('FLASK_DEBUG', '0') in ('1', 'true', 'True')
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=debug_flag)

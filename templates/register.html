@@ -4,7 +4,7 @@
 <div class="row justify-content-center">
   <div class="col-md-6">
     <div class="card mt-5">
-      <div class="card-header bg-primary text-white">註冊新帳號</div>
+      <div class="card-header bg-main-pink text-white">註冊新帳號</div>
       <div class="card-body">
         <form method="post" action="{{ url_for('register') }}">
           <div class="mb-3">
@@ -21,7 +21,8 @@
           </div>
           <div class="mb-3">
             <label for="phone" class="form-label">電話</label>
-            <input type="text" class="form-control" id="phone" name="phone" required maxlength="20">
+            <input type="tel" class="form-control" id="phone" name="phone" required minlength="10" maxlength="10" pattern="\d{10}" inputmode="numeric" placeholder="例如：0912345678" title="請輸入10位數字的手機號碼">
+            <div class="form-text">請輸入10位數字（例如：0912345678）。</div>
           </div>
           <div class="mb-3">
             <label for="gender" class="form-label">性別</label>
@@ -38,7 +39,14 @@
           </div>
           <div class="mb-3">
             <label for="preferred_position" class="form-label">偏好位置</label>
-            <input type="text" class="form-control" id="preferred_position" name="preferred_position" required maxlength="50">
+            <select class="form-select" id="preferred_position" name="preferred_position" required>
+              <option value="">請選擇</option>
+              <option value="前場">前場</option>
+              <option value="後場">後場</option>
+              <option value="左邊">左邊</option>
+              <option value="右邊">右邊</option>
+              <option value="不限">不限</option>
+            </select>
           </div>
           <div class="mb-3">
             <label for="skill_level" class="form-label">技術分級（1~18）</label>
@@ -61,7 +69,34 @@
               </label>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary w-100">註冊</button>
+          <div class="mb-3">
+            <label for="play_style" class="form-label">擅長打法</label>
+            <select class="form-select" id="play_style" name="play_style" required>
+              <option value="防守型" selected>防守型</option>
+              <option value="進攻型">進攻型</option>
+              <option value="雙打">雙打</option>
+              <option value="單打">單打</option>
+              <option value="都可以">都可以</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="preferred_time" class="form-label">偏好時段</label>
+            <select class="form-select" id="preferred_time" name="preferred_time" required>
+              <option value="早上">早上</option>
+              <option value="下午">下午</option>
+              <option value="晚上" selected>晚上</option>
+              <option value="不限">不限</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="contact" class="form-label">聯絡方式</label>
+            <input type="text" class="form-control" id="contact" name="contact" maxlength="100" placeholder="Line/Email/其他，可選填">
+          </div>
+          <div class="mb-3">
+            <label for="bio" class="form-label">自我介紹</label>
+            <textarea class="form-control" id="bio" name="bio" rows="2" maxlength="200" placeholder="簡單介紹一下自己，可選填"></textarea>
+          </div>
+          <button type="submit" class="btn w-100">註冊</button>
         </form>
         <div class="text-center mt-3">
           已有帳號？<a href="{{ url_for('login') }}">登入</a>

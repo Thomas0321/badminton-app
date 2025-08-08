@@ -6,8 +6,8 @@
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="fas fa-user-plus me-2"></i>設定個人檔案</h4>
+            <div class="card-header bg-main-pink text-white">
+                <h4 class="mb-0 text-white"><i class="fas fa-user-plus me-2"></i>設定個人檔案</h4>
             </div>
             <div class="card-body">
                 <form id="profileForm">
@@ -47,17 +47,48 @@
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="skill_level" class="form-label">技術水平 *</label>
+                            <label for="skill_level" class="form-label">球技等級（1~18）*</label>
                             <select class="form-select" id="skill_level" required>
                                 <option value="">請選擇</option>
-                                <option value="初學">初學</option>
-                                <option value="初級">初級</option>
-                                <option value="中級">中級</option>
-                                <option value="中高級">中高級</option>
-                                <option value="高級">高級</option>
-                                <option value="競技">競技</option>
+                                {% for i in range(1, 19) %}
+                                <option value="{{ i }}">{{ i }}</option>
+                                {% endfor %}
                             </select>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="play_style" class="form-label">擅長打法 *</label>
+                            <select class="form-select" id="play_style" required>
+                                <option value="">請選擇</option>
+                                <option value="單打">單打</option>
+                                <option value="雙打">雙打</option>
+                                <option value="都可以">都可以</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="preferred_time" class="form-label">偏好時段 *</label>
+                            <select class="form-select" id="preferred_time" required>
+                                <option value="">請選擇</option>
+                                <option value="早上">早上</option>
+                                <option value="下午">下午</option>
+                                <option value="晚上">晚上</option>
+                                <option value="皆可">皆可</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="contact" class="form-label">聯絡方式 *</label>
+                            <input type="text" class="form-control" id="contact" maxlength="100" required placeholder="Line/電話/Email...">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="bio" class="form-label">自我介紹</label>
+                        <textarea class="form-control" id="bio" rows="3" maxlength="300" placeholder="簡單介紹自己，讓大家更認識你"></textarea>
+                    </div>
+                    
+                    <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="preferred_region" class="form-label">常用地區 *</label>
                             <select class="form-select" id="preferred_region" required>
@@ -95,7 +126,7 @@
                     </div>
                     
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">
+                        <button type="submit" class="btn btn-lg">
                             <i class="fas fa-save me-2"></i>完成設定
                         </button>
                     </div>
@@ -110,17 +141,21 @@
 <script>
 document.getElementById('profileForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
     const formData = {
         nickname: document.getElementById('nickname').value,
         gender: document.getElementById('gender').value,
         experience_years: document.getElementById('experience_years').value,
         preferred_position: document.getElementById('preferred_position').value,
         skill_level: document.getElementById('skill_level').value,
+        play_style: document.getElementById('play_style').value,
+        preferred_time: document.getElementById('preferred_time').value,
         preferred_region: document.getElementById('preferred_region').value,
+        contact: document.getElementById('contact').value,
+        bio: document.getElementById('bio').value,
         notification_enabled: document.getElementById('notification_enabled').checked
     };
-    
+
     try {
         const response = await fetch('/profile_setup', {
             method: 'POST',
@@ -129,9 +164,9 @@ document.getElementById('profileForm').addEventListener('submit', async function
             },
             body: JSON.stringify(formData)
         });
-        
+
         const result = await response.json();
-        
+
         if (result.success) {
             window.location.href = '/';
         } else {

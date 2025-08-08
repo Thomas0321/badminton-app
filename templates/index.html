@@ -3,19 +3,29 @@
 {% block title %}首頁 - 羽球揪團{% endblock %}
 
 {% block content %}
-<div class="hero-section bg-primary text-white rounded p-5 mb-5">
+<div class="hero-section text-white rounded p-5 mb-5">
     <div class="row align-items-center">
         <div class="col-md-8">
-            <h1 class="display-4 mb-3">
-                <i class="fas fa-shuttlecock-cock me-3"></i>羽球揪團平台
-            </h1>
-            <p class="lead mb-4">找到最適合的球友，享受羽球的樂趣！</p>
+            <h1 class="display-4 mb-3 d-flex align-items-center">
+    <i class="fas fa-shuttlecock-cock me-3"></i>
+    <span class="d-inline-flex align-items-center">
+        <i class="fas fa-feather-alt ms-2" style="transform: scaleX(-1) rotate(-25deg); font-size: 1.5em; color: #fff;"></i>
+        <span style="margin: 0 0.5em;"></span>
+        <strong class="text-white">羽你相遇</strong>
+        <span style="margin: 0 0.5em;"></span>
+        <i class="fas fa-feather-alt me-2" style="transform: rotate(-25deg); font-size: 1.5em; color: #fff;"></i>
+    </span>
+</h1>
+            <p class="lead mb-4"><strong>找到最適合的球友，享受羽球的樂趣！</strong></p>
             <div class="d-flex gap-3">
                 <button class="btn btn-light btn-lg" onclick="showTeams()">
-                    <i class="fas fa-search me-2"></i>📥 加入隊伍
+                    <i class="fas fa-search me-2"></i>加入隊伍
                 </button>
                 <a href="{{ url_for('create_team') }}" class="btn btn-outline-light btn-lg">
-                    <i class="fas fa-plus me-2"></i>➕ 建立隊伍
+                    <i class="fas fa-plus me-2"></i>建立隊伍
+                </a>
+                <a href="{{ url_for('my_teams') }}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-list me-2"></i>我已加入的隊伍
                 </a>
             </div>
         </div>
@@ -28,7 +38,7 @@
 <!-- Filter Section -->
 <div class="card mb-4" id="filterSection" style="display: none;">
     <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>篩選條件</h5>
+        <h5 class="mb-0 text-white"><i class="fas fa-filter me-2 text-white"></i>篩選條件</h5>
     </div>
     <div class="card-body">
         <div class="row">
@@ -74,7 +84,7 @@
             </div>
         </div>
         <div class="text-center">
-            <button class="btn btn-primary" onclick="filterTeams()">
+            <button class="btn" onclick="filterTeams()">
                 <i class="fas fa-search me-2"></i>搜尋
             </button>
             <button class="btn btn-outline-secondary ms-2" onclick="clearFilters()">
@@ -88,7 +98,7 @@
 <div id="teamsContainer" style="display: none;">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3><i class="fas fa-list me-2"></i>可加入的隊伍</h3>
-        <button class="btn btn-outline-primary" onclick="refreshTeams()">
+        <button class="btn btn-outline-accent" onclick="refreshTeams()">
             <i class="fas fa-sync-alt me-2"></i>重新整理
         </button>
     </div>
@@ -99,7 +109,7 @@
 
 <!-- Loading Spinner -->
 <div id="loadingSpinner" class="text-center" style="display: none;">
-    <div class="spinner-border text-primary" role="status">
+    <div class="spinner-border text-main-pink" role="status">
         <span class="visually-hidden">載入中...</span>
     </div>
     <p class="mt-2">載入隊伍資訊中...</p>
@@ -118,7 +128,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
-                <button type="button" class="btn btn-primary" id="joinTeamBtn" onclick="joinTeam()">我要加入</button>
+                <button type="button" class="btn" id="joinTeamBtn" onclick="joinTeam()">我要加入</button>
             </div>
         </div>
     </div>
@@ -172,17 +182,17 @@ function displayTeams(teams) {
                     
                     <div class="mb-2">
                         <small class="text-muted">
-                            <i class="fas fa-user me-1"></i>主辦者：${team.organizer}
+                            <i class="fas fa-user me-1"></i>主辦者：${team.organizer} <span class="ms-2 badge bg-secondary">${team.organizer_gender}</span> <span class="ms-1 badge bg-success">級數 ${team.organizer_skill_level}</span>
                         </small>
                     </div>
                     
                     <div class="mb-2">
-                        <i class="fas fa-map-marker-alt me-1 text-primary"></i>
+                        <i class="fas fa-map-marker-alt me-1 text-main-pink"></i>
                         <strong>${team.location_city}</strong> - ${team.location_venue}
                     </div>
                     
                     <div class="mb-2">
-                        <i class="fas fa-clock me-1 text-primary"></i>
+                        <i class="fas fa-clock me-1 text-main-pink"></i>
                         ${formatDateTime(team.start_time)} - ${formatTime(team.end_time)}
                     </div>
                     
@@ -201,6 +211,16 @@ function displayTeams(teams) {
 function formatDateTime(dateTimeStr) {
     const date = new Date(dateTimeStr);
     return date.toLocaleDateString('zh-TW') + ' ' + date.toLocaleTimeString('zh-TW', {hour: '2-digit', minute: '2-digit'});
+}
+
+function renderSkillLevel(level) {
+    // 支援數字與字串
+    const table = {
+        1: '初學', 2: '初級', 3: '中級', 4: '中高級', 5: '高級', 6: '競技',
+        '1': '初學', '2': '初級', '3': '中級', '4': '中高級', '5': '高級', '6': '競技',
+        '初學': '初學', '初級': '初級', '中級': '中級', '中高級': '中高級', '高級': '高級', '競技': '競技'
+    };
+    return table[level] || level || '';
 }
 
 function formatTime(dateTimeStr) {
@@ -224,14 +244,14 @@ function showTeamDetail(teamId) {
         joinBtn.className = 'btn btn-warning';
     } else {
         joinBtn.textContent = '我要加入';
-        joinBtn.className = 'btn btn-primary';
+        joinBtn.className = 'btn';
     }
     
     document.getElementById('teamModalBody').innerHTML = `
         <div class="row">
             <div class="col-md-6">
                 <h6><i class="fas fa-user me-2"></i>主辦者資訊</h6>
-                <p>${team.organizer}</p>
+                <p>${team.organizer} <span class="ms-2 badge bg-secondary">${team.organizer_gender}</span> <span class="ms-1 badge bg-success">級數 ${team.organizer_skill_level}</span></p>
                 
                 <h6><i class="fas fa-map-marker-alt me-2"></i>活動地點</h6>
                 <p><strong>${team.location_city}</strong><br>
@@ -265,7 +285,7 @@ function showTeamDetail(teamId) {
             <div class="mt-2">
                 <div class="input-group">
                     <input type="text" class="form-control" id="newMessage" placeholder="輸入留言...">
-                    <button class="btn btn-outline-primary" onclick="sendMessage()">
+                    <button class="btn btn-outline-accent" onclick="sendMessage()">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
@@ -291,14 +311,19 @@ async function loadTeamMessages(teamId) {
             return;
         }
         
-        container.innerHTML = messages.map(msg => `
-            <div class="mb-2">
-                <strong>${msg.user_nickname}</strong>
-                <small class="text-muted">${msg.created_at}</small>
-                <div>${msg.message}</div>
-            </div>
-        `).join('');
-        
+        // 時間自動+8小時，留言由下到上
+        container.innerHTML = messages.slice().reverse().map(msg => {
+            let date = new Date(msg.created_at.replace(/-/g, '/'));
+            date.setHours(date.getHours() + 8);
+            const twTime = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+            return `
+                <div class="mb-2">
+                    <strong>${msg.user_nickname}</strong>
+                    <small class="text-muted">${twTime}</small>
+                    <div>${msg.message}</div>
+                </div>
+            `;
+        }).join('');
         container.scrollTop = container.scrollHeight;
     } catch (error) {
         console.error('載入留言失敗:', error);
@@ -392,9 +417,6 @@ style.textContent = `
     .team-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    .hero-section {
-        background: linear-gradient(135deg, #007bff, #0056b3);
     }
 `;
 document.head.appendChild(style);

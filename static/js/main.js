@@ -114,7 +114,6 @@ function addLoadingStates() {
 function checkUserStatus() {
     // Check if user is banned or has notifications
     // This would typically make an API call
-    console.log('Checking user status...');
 }
 
 // Utility functions
@@ -176,7 +175,27 @@ async function apiCall(url, options = {}) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        return await response.json();
+        const data = await response.json();
+        const container = document.getElementById('message-container');
+        const messages = data.messages;
+        
+        // 時間自動+8小時，留言由下到上
+        container.innerHTML = messages.slice().reverse().map(msg => {
+            // msg.created_at assumed to be "YYYY-MM-DD HH:mm" or ISO format
+            let date = new Date(msg.created_at.replace(/-/g, '/'));
+            date.setHours(date.getHours() + 8);
+            const twTime = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+            return `
+                <div class="mb-2">
+                    <strong>${msg.user_nickname}</strong>
+                    <small class="text-muted">${twTime}</small>
+                    <div>${msg.message}</div>
+                </div>
+            `;
+        }).join('');
+        container.scrollTop = container.scrollHeight;
+        
+        return data;
     } catch (error) {
         console.error('API call failed:', error);
         showNotification('網路連線發生錯誤，請稍後再試', 'danger');
@@ -263,8 +282,45 @@ function validateEmail(email) {
 
 function validatePhone(phone) {
     const re = /^[\d\-\+\(\)\s]+$/;
-    return re.test(phone) && phone.replace(/\D/g, '').length >= 10;
+    return re.test(phone) && phone.replace(/\D/g, '').length === 10;
 }
+
+// Enforce 10-digit phone inputs across the site
+function enhancePhoneInput(el) {
+    if (!el) return;
+    // Set helpful attributes
+    el.setAttribute('type', 'tel');
+    el.setAttribute('inputmode', 'numeric');
+    el.setAttribute('pattern', '\\d{10}');
+    el.setAttribute('minlength', '10');
+    el.setAttribute('maxlength', '10');
+    el.setAttribute('placeholder', el.getAttribute('placeholder') || '例如：0912345678');
+    if (!el.getAttribute('title')) {
+        el.setAttribute('title', '請輸入10位數字的手機號碼');
+    }
+    // Live-clean: keep only digits and max 10
+    el.addEventListener('input', () => {
+        const digits = el.value.replace(/\D/g, '').slice(0, 10);
+        el.value = digits;
+        // Toggle validity UI if using Bootstrap
+        if (digits.length === 10) {
+            el.classList.remove('is-invalid');
+            el.classList.add('is-valid');
+        } else {
+            el.classList.remove('is-valid');
+            // only show invalid if user typed something
+            if (digits.length > 0) el.classList.add('is-invalid');
+            else el.classList.remove('is-invalid');
+        }
+    });
+}
+
+function enforcePhoneInputs() {
+    const candidates = Array.from(document.querySelectorAll('input#phone, input[name="phone"]'));
+    candidates.forEach(enhancePhoneInput);
+}
+
+document.addEventListener('DOMContentLoaded', enforcePhoneInputs);
 
 // Image handling
 function previewImage(input, previewElement) {
@@ -322,6 +378,29 @@ function getCurrentLocation() {
     });
 }
 
+// 退出隊伍
+function leaveTeam(teamId) {
+    confirmAction('確定要退出這個隊伍嗎？', async function() {
+        try {
+            const response = await fetch(`/leave_team/${teamId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            const result = await response.json();
+            if (result.success) {
+                showNotification('已成功退出隊伍', 'success');
+                setTimeout(() => location.reload(), 800);
+            } else {
+                showNotification(result.error || '退出失敗', 'danger');
+            }
+        } catch (error) {
+            showNotification('網路錯誤，請稍後再試', 'danger');
+        }
+    });
+}
+
 // Export functions for use in other scripts
 window.BadmintonApp = {
     formatDateTime,
@@ -337,5 +416,6 @@ window.BadmintonApp = {
     validatePhone,
     previewImage,
     validateImageFile,
-    getCurrentLocation
+    getCurrentLocation,
+    leaveTeam
 };
